@@ -1,189 +1,268 @@
 # TP1 : Maîtrise réseau du poste
 
-Pour ce TP, on va utiliser **uniquement votre poste** (pas de VM, rien, quedal, quetchi).
-
-Le but du TP : se remettre dans le bain tranquillement en manipulant pas mal de concepts qu'on a vu l'an dernier.
-
-C'est un premier TP *chill*, qui vous(ré)apprend à maîtriser votre poste en ce qui concerne le réseau. Faites le seul ou avec votre mate préféré bien sûr, mais jouez le jeu, faites vos propres recherches.
-
-La "difficulté" va crescendo au fil du TP, mais la solution tombe très vite avec une ptite recherche Google si vos connaissances de l'an dernier deviennent floues.
-
-- [TP1 : Maîtrise réseau du poste](#tp1--maîtrise-réseau-du-poste)
-- [I. Basics](#i-basics)
-- [II. Go further](#ii-go-further)
-- [III. Le requin](#iii-le-requin)
-
 # I. Basics
-
-> Tout est à faire en ligne de commande, sauf si précision contraire.
 
 ☀️ **Carte réseau WiFi**
 
-Déterminer...
+L'adresse MAC de votre carte WiFi : 
 
-- l'adresse MAC de votre carte WiFi
-- l'adresse IP de votre carte WiFi
-- le masque de sous-réseau du réseau LAN auquel vous êtes connectés en WiFi
-  - en notation CIDR, par exemple `/16`
-  - ET en notation décimale, par exemple `255.255.0.0`
+```plaintext
+PS C:\Users\maxfe> ipconfig /all
+Carte réseau sans fil Wi-Fi :
+   Adresse physique . . . . . . . . . . . : 84-14-4D-10-5E-AF
+```
+
+L'adresse IP de votre carte WiFi :
+
+```plaintext
+PS C:\Users\maxfe> ipconfig /all
+Carte réseau sans fil Wi-Fi :
+   Adresse IPv4. . . . . . . . . . . . . .: 172.20.10.3(préféré)
+```
+
+Le masque de sous-réseau du réseau LAN auquel vous êtes connectés en WiFi : 
+
+```plaintext
+PS C:\Users\maxfe> ipconfig /all
+Carte réseau sans fil Wi-Fi :
+   Masque de sous-réseau. . . . . . . . . : 255.255.255.240
+```
+Et en notation CIDR : ``255.255.255.240/20``
 
 ---
 
 ☀️ **Déso pas déso**
 
-Pas besoin d'un terminal là, juste une feuille, ou votre tête, ou un tool qui calcule tout hihi. Déterminer...
+L'adresse de réseau du LAN auquel vous êtes connectés en WiFi : ``172.20.10.0``
 
-- l'adresse de réseau du LAN auquel vous êtes connectés en WiFi
-- l'adresse de broadcast
-- le nombre d'adresses IP disponibles dans ce réseau
+L'adresse de broadcast : ``172.20.10.15``
+
+Le nombre d'adresses IP disponibles dans ce réseau est : ``14``
 
 ---
 
 ☀️ **Hostname**
 
-- déterminer le hostname de votre PC
+Déterminer le hostname de votre PC :
+
+```plaintext
+PS C:\Users\maxfe> hostname
+SmegMSI
+```
 
 ---
 
 ☀️ **Passerelle du réseau**
 
-Déterminer...
+L'adresse IP de la passerelle du réseau :
+```plaintext
+PS C:\Users\maxfe> ipconfig /all
+Carte réseau sans fil Wi-Fi :
+Passerelle par défaut. . . . . . . . . : 172.20.10.1
+```
 
-- l'adresse IP de la passerelle du réseau
-- l'adresse MAC de la passerelle du réseau
+L'adresse MAC de la passerelle du réseau :
+```plaintext
+PS C:\Users\maxfe> ipconfig /all
+Carte réseau sans fil Wi-Fi :
+   Adresse physique . . . . . . . . . . . : 84-14-4D-10-5E-AF
+```
 
 ---
 
 ☀️ **Serveur DHCP et DNS**
 
-Déterminer...
+L'adresse IP du serveur DHCP qui vous a filé une IP :
+```plaintext
+PS C:\Users\maxfe> ipconfig /all
+Carte réseau sans fil Wi-Fi :
+    Serveur DHCP . . . . . . . . . . . . . : 172.20.10.1
+```
 
-- l'adresse IP du serveur DHCP qui vous a filé une IP
-- l'adresse IP du serveur DNS que vous utilisez quand vous allez sur internet
+L'adresse IP du serveur DNS que vous utilisez quand vous allez sur internet :
+```plaintext
+PS C:\Users\maxfe> ipconfig /all
+Carte réseau sans fil Wi-Fi :
+   Serveurs DNS. . .  . . . . . . . . . . : fe80::40c7:11ff:fec6:5064%30
+   172.20.10.1
+```
 
 ---
 
 ☀️ **Table de routage**
 
-Déterminer...
-
-- dans votre table de routage, laquelle est la route par défaut
+Dans votre table de routage, laquelle est la route par défaut :
+```plaintext
+PS C:\Users\maxfe> route print
+IPv4 Table de routage
+===========================================================================
+Itinéraires actifs :
+Destination réseau    Masque réseau  Adr. passerelle   Adr. interface Métrique
+          0.0.0.0          0.0.0.0      172.20.10.1      172.20.10.3     50
+```
 
 ---
 
-![Not sure](./img/notsure.png)
-
 # II. Go further
-
-> Toujours tout en ligne de commande.
 
 ---
 
 ☀️ **Hosts ?**
 
-- faites en sorte que pour votre PC, le nom `b2.hello.vous` corresponde à l'IP `1.1.1.1`
-- prouvez avec un `ping b2.hello.vous` que ça ping bien `1.1.1.1`
+Faites en sorte que pour votre PC, le nom `b2.hello.vous` corresponde à l'IP `1.1.1.1` :
 
-> Vous pouvez éditer en GUI, et juste me montrer le contenu du fichier depuis le terminal pour le compte-rendu.
+```plaintext
+PS C:\Windows\System32\drivers\etc> cat hosts
+51.75.205.76 kymonovps
+1.1.1.1 b2.hello.vous
+```
+
+
+Prouvez avec un `ping b2.hello.vous` que ça ping bien `1.1.1.1` :
+```plaintext
+PS C:\Users\maxfe> ping b2.hello.vous
+
+Envoi d’une requête 'ping' sur b2.hello.vous [1.1.1.1] avec 32 octets de données :
+Réponse de 1.1.1.1 : octets=32 temps=93 ms TTL=53
+Réponse de 1.1.1.1 : octets=32 temps=47 ms TTL=53
+Réponse de 1.1.1.1 : octets=32 temps=163 ms TTL=53
+
+Statistiques Ping pour 1.1.1.1:
+    Paquets : envoyés = 3, reçus = 3, perdus = 0 (perte 0%),
+Durée approximative des boucles en millisecondes :
+    Minimum = 47ms, Maximum = 163ms, Moyenne = 101ms
+```
 
 ---
 
 ☀️ **Go mater une vidéo youtube et déterminer, pendant qu'elle tourne...**
 
-- l'adresse IP du serveur auquel vous êtes connectés pour regarder la vidéo
-- le port du serveur auquel vous êtes connectés
-- le port que votre PC a ouvert en local pour se connecter au port du serveur distant
+![Youtube](/images/Capture_YTB_UDP.png)
+
+L'adresse IP du serveur auquel vous êtes connectés pour regarder la vidéo : ``2001:860:de11:22b::d``
+
+Le port du serveur auquel vous êtes connectés : ``443``
+
+Le port que votre PC a ouvert en local pour se connecter au port du serveur distant : ``53103``
 
 ---
 
 ☀️ **Requêtes DNS**
 
-Déterminer...
+A quelle adresse IP correspond le nom de domaine `www.ynov.com` :
+```plaintext
+PS C:\Users\maxfe> nslookup www.ynov.com
+Serveur :   UnKnown
+Address:  fe80::40c7:11ff:fec6:5064
 
-- à quelle adresse IP correspond le nom de domaine `www.ynov.com`
+Réponse ne faisant pas autorité :
+Nom :    www.ynov.com
+Addresses:  2606:4700:20::681a:ae9
+          2606:4700:20::ac43:4ae2
+          2606:4700:20::681a:be9
+          104.26.10.233
+          104.26.11.233
+          172.67.74.226
+```
+Il y a trois adresses IP.
 
-> Ca s'appelle faire un "lookup DNS".
+A quel nom de domaine correspond l'IP `174.43.238.89`
+```plaintext
+PS C:\Users\maxfe> nslookup 174.43.238.89
+Serveur :   UnKnown
+Address:  fe80::40c7:11ff:fec6:5064
 
-- à quel nom de domaine correspond l'IP `174.43.238.89`
-
-> Ca s'appelle faire un "reverse lookup DNS".
+Nom :    89.sub-174-43-238.myvzw.com
+Address:  174.43.238.89
+```
+Le nom de domaine est ``myvzw.com``.
 
 ---
 
 ☀️ **Hop hop hop**
 
-Déterminer...
+Par combien de machines vos paquets passent quand vous essayez de joindre `www.ynov.com`
 
-- par combien de machines vos paquets passent quand vous essayez de joindre `www.ynov.com`
+```plaintext
+PS C:\Users\maxfe> tracert www.ynov.com
+
+Détermination de l’itinéraire vers www.ynov.com [2606:4700:20::681a:be9]
+avec un maximum de 30 sauts :
+
+  1     1 ms     1 ms     1 ms  2a04:cec0:1121:7e38:ddbb:17ea:94df:72ad
+  2     *        *        *     Délai d’attente de la demande dépassé.
+  3     *        *        *     Délai d’attente de la demande dépassé.
+  4    96 ms    79 ms    26 ms  2001:860:b215:5100::14:4
+  5    56 ms    16 ms    19 ms  2001:860:b215:5100::15:2
+  6    42 ms    17 ms     *     2001:860:b215:5100::11:4
+  7    18 ms    37 ms    15 ms  2001:860:bbe0:192::1
+  8    21 ms    25 ms    53 ms  2001:860:bbee:14a::1
+  9     *        *        *     Délai d’attente de la demande dépassé.
+ 10    63 ms    23 ms    33 ms  2400:cb00:538:3::
+ 11    42 ms    25 ms    26 ms  2606:4700:20::681a:be9
+
+Itinéraire déterminé.
+```
 
 ---
 
 ☀️ **IP publique**
 
-Déterminer...
+L'adresse IP publique de la passerelle du réseau (le routeur d'YNOV donc si vous êtes dans les locaux d'YNOV quand vous faites le TP)
 
-- l'adresse IP publique de la passerelle du réseau (le routeur d'YNOV donc si vous êtes dans les locaux d'YNOV quand vous faites le TP)
+Je suis en partage de connexion avec mon tél parce que le réseau d'Ynov est kssé ;(
+
+Bref je vais sur ce site : https://www.whatismyip.com/
+Et mon IP publique (IPv6) est : ``2a04:cec0:1121:7e38:dc01:cd13:7077:fa98``
 
 ---
 
 ☀️ **Scan réseau**
 
-Déterminer...
+Combien il y a de machines dans le LAN auquel vous êtes connectés
 
-- combien il y a de machines dans le LAN auquel vous êtes connectés
-
-> Allez-y mollo, on va vite flood le réseau sinon. :)
-
-![Stop it](./img/stop.png)
+```plaintext
+PS C:\Users\maxfe> nmap -sn 172.20.10.1-254
+Starting Nmap 7.94 ( https://nmap.org ) at 2023-10-12 12:28 Paris, Madrid (heure dÆÚtÚ)
+Nmap scan report for 172.20.10.1
+Host is up (0.0065s latency).
+MAC Address: 42:C7:11:C6:50:64 (Unknown)
+Nmap scan report for 172.20.10.3
+Host is up.
+Stats: 0:00:07 elapsed; 15 hosts completed (2 up), 239 undergoing Ping Scan
+Ping Scan Timing: About 2.62% done; ETC: 12:31 (0:03:06 remaining)
+Stats: 0:00:11 elapsed; 15 hosts completed (2 up), 239 undergoing Ping Scan
+Ping Scan Timing: About 4.71% done; ETC: 12:31 (0:03:02 remaining)
+Stats: 0:00:44 elapsed; 15 hosts completed (2 up), 239 undergoing Ping Scan
+Ping Scan Timing: About 22.07% done; ETC: 12:31 (0:02:32 remaining)
+Stats: 0:01:33 elapsed; 15 hosts completed (2 up), 239 undergoing Ping Scan
+Ping Scan Timing: About 47.18% done; ETC: 12:31 (0:01:43 remaining)
+Nmap done: 254 IP addresses (2 hosts up) scanned in 197.28 seconds
+```
 
 # III. Le requin
 
-Faites chauffer Wireshark. Pour chaque point, je veux que vous me livrez une capture Wireshark, format `.pcap` donc.
-
-Faites *clean* 🧹, vous êtes des grands now :
-
-- livrez moi des captures réseau avec uniquement ce que je demande et pas 40000 autres paquets autour
-  - vous pouvez sélectionner seulement certains paquets quand vous enregistrez la capture dans Wireshark
-- stockez les fichiers `.pcap` dans le dépôt git et côté rendu Markdown, vous me faites un lien vers le fichier, c'est cette syntaxe :
-
-```markdown
-[Lien vers capture ARP](./captures/arp.pcap)
-```
-
----
-
 ☀️ **Capture ARP**
 
-- 📁 fichier `arp.pcap`
-- capturez un échange ARP entre votre PC et la passerelle du réseau
+[Capture ARP](/wireshark/arp.pcap)
 
-> Si vous utilisez un filtre Wireshark pour mieux voir ce trafic, précisez-le moi dans le compte-rendu.
+J'utilise le filtre "arp" dans Wireshark pour mieux voir ce trafic.
 
 ---
 
 ☀️ **Capture DNS**
 
-- 📁 fichier `dns.pcap`
-- capturez une requête DNS vers le domaine de votre choix et la réponse
-- vous effectuerez la requête DNS en ligne de commande
+[Capture DNS](/wireshark/dns.pcap)
 
-> Si vous utilisez un filtre Wireshark pour mieux voir ce trafic, précisez-le moi dans le compte-rendu.
+J'utilise la commande `nslookup google.com`
+J'utilise le filtre "dns" dans Wireshark pour mieux voir ce trafic.
 
 ---
 
 ☀️ **Capture TCP**
 
-- 📁 fichier `tcp.pcap`
-- effectuez une connexion qui sollicite le protocole TCP
-- je veux voir dans la capture :
-  - un 3-way handshake
-  - un peu de trafic
-  - la fin de la connexion TCP
+[Capture TCP](/wireshark/tcp.pcap)
 
-> Si vous utilisez un filtre Wireshark pour mieux voir ce trafic, précisez-le moi dans le compte-rendu.
+J'utilise le filtre "tcp" dans Wireshark pour mieux voir ce trafic.
 
 ---
-
-![Packet sniffer](img/wireshark.jpg)
-
-> *Je sais que je vous l'ai déjà servi l'an dernier lui, mais j'aime trop ce meme hihi 🐈*
