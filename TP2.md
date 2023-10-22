@@ -1,61 +1,5 @@
 # TP2 : Environnement virtuel
 
-Dans ce TP, on remanipule toujours les mêmes concepts qu'au TP1, mais en environnement virtuel avec une posture un peu plus orientée administrateur qu'au TP1.
-
-- [TP2 : Environnement virtuel](#tp2--environnement-virtuel)
-- [0. Prérequis](#0-prérequis)
-- [I. Topologie réseau](#i-topologie-réseau)
-  - [Topologie](#topologie)
-  - [Tableau d'adressage](#tableau-dadressage)
-  - [Hints](#hints)
-  - [Marche à suivre recommandée](#marche-à-suivre-recommandée)
-  - [Compte-rendu](#compte-rendu)
-- [II. Interlude accès internet](#ii-interlude-accès-internet)
-- [III. Services réseau](#iii-services-réseau)
-  - [1. DHCP](#1-dhcp)
-  - [2. Web web web](#2-web-web-web)
-
-# 0. Prérequis
-
-![One IP 2 VM](./img/oneip.jpg)
-
-La même musique que l'an dernier :
-
-- VirtualBox
-- Rocky Linux
-  - préparez une VM patron, prête à être clonée
-  - système à jour (`dnf update`)
-  - SELinux désactivé
-  - préinstallez quelques paquets, je pense à notamment à :
-    - `vim`
-    - `bind-utils` pour la commande `dig`
-    - `traceroute`
-    - `tcpdump` pour faire des captures réseau
-
-La ptite **checklist** que vous respecterez pour chaque VM :
-
-- [ ] carte réseau host-only avec IP statique
-- [ ] pas de carte NAT, sauf si demandée
-- [ ] adresse IP statique sur la carte host-only
-- [ ] connexion SSH fonctionnelle
-- [ ] firewall actif
-- [ ] SELinux désactivé
-- [ ] hostname défini
-
-Je pardonnerai aucun écart de la checklist côté notation. 🧂🧂🧂
-
-> Pour rappel : une carte host-only dans VirtualBox, ça permet de créer un LAN entre votre PC et une ou plusieurs VMs. La carte NAT de VirtualBox elle, permet de donner internet à une VM.
-
-# I. Topologie réseau
-
-Vous allez dans cette première partie préparer toutes les VMs et vous assurez que leur connectivité réseau fonctionne bien.
-
-On va donc parler essentiellement IP et routage ici.
-
-## Topologie
-
-![Topologie](./img/topo.png)
-
 ## Tableau d'adressage
 
 | Node             | LAN1 `10.1.1.0/24` | LAN2 `10.1.2.0/24` |
@@ -65,48 +9,6 @@ On va donc parler essentiellement IP et routage ici.
 | `node1.lan2.tp1` | x                  | `10.1.2.11`        |
 | `node2.lan2.tp1` | x                  | `10.1.2.12`        |
 | `router.tp1`     | `10.1.1.254`       | `10.1.2.254`       |
-
-## Hints
-
-➜ **Sur le `router.tp1`**
-
-Il sera nécessaire d'**activer le routage**. Par défaut Rocky n'agit pas comme un routeur. C'est à dire que par défaut il ignore les paquets qu'il reçoit s'il l'IP de destination n'est pas la sienne. Or, c'est précisément le job d'un routeur.
-
-> Dans notre cas, si `node1.lan1.tp1` ping `node1.lan2.tp1`, le paquet a pour IP source `10.1.1.11` et pour IP de destination `10.1.2.11`. Le paquet passe par le routeur. Le routeur reçoit donc un paquet qui a pour destination `10.1.2.11`, une IP qui n'est pas la sienne. S'il agit comme un routeur, il comprend qu'il doit retransmettre le paquet dans l'autre réseau. Par défaut, la plupart de nos OS ignorent ces paquets, car ils ne sont pas des routeurs.
-
-Pour activer le routage donc, sur une machine Rocky :
-
-```bash
-$ firewall-cmd --add-masquerade
-$ firewall-cmd --add-masquerade --permanent
-$ sysctl -w net.ipv4.ip_forward=1
-```
-
----
-
-➜ **Les switches sont les host-only de VirtualBox pour vous**
-
-Vous allez donc avoir besoin de créer deux réseaux host-only. Faites bien attention à connecter vos VMs au bon switch host-only.
-
----
-
-➜ **Aucune carte NAT**
-
-## Marche à suivre recommandée
-
-Dans l'ordre, je vous recommande de :
-
-**1.** créer les VMs dans VirtualBox (clone du patron)  
-**2.** attribuer des IPs statiques à toutes les VMs  
-**3.** vous connecter en SSH à toutes les VMs  
-**4.** activer le routage sur `router.tp1`  
-**5.** vous assurer que les membres de chaque LAN se ping, c'est à dire :
-
-- `node1.lan1.tp1`
-  - doit pouvoir ping `node2.lan1.tp1`
-  - doit aussi pouvoir ping `router.tp1` (il a deux IPs ce `router.tp1`, `node1.lan1.tp1` ne peut ping que celle qui est dans son réseau : `10.1.1.254`)
-- `router.tp1` ping tout le monde
-- les membres du LAN2 se ping aussi
 
 **6.** ajouter les routes statiques
 
