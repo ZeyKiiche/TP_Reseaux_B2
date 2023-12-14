@@ -145,14 +145,14 @@ Ahaha c'est un hash...
 
 Bon bah go chercher le bonne outil pour comprendre ce truc, sachant qu'un hash est par définition à sens unique donc irréverssible. MAIS on peut comparer ce hash avec des hash d'une wordlist afin de renvoyer le bon mot derrière.
 
-On s'aperçoit vite qu'il y a du SEL au début de ce hash pour maximiser et faire en sorte que rien ne se ressemble mais en cherchant le bonne outil on tombe sur ce GitHub :
+On s'aperçoit vite qu'il y a du SEL au début de ce hash pour maximiser la sécu et faire en sorte que rien ne se ressemble mais en cherchant le bonne outil on tombe sur ce GitHub :
 https://github.com/kazkansouh/odd-hash
 
 On a donc ces infos :
 
     salt1 : "#Yp'?7." soit "235970273f375c2e" en héxa
     
-    salt2 : "}Q?&\034`>Nt_uX" soit "7d513f261c603e4e745f7558"
+    salt2 : "}Q?&\034`>Nt_uX" soit "7d513f261c603e4e745f7558" en héxa
 
     Double salt hex : 235970273f375c2e7d513f261c603e4e745f7558
 
