@@ -27,8 +27,6 @@ Concrètement, au menu :
   - on ajoutera le certificat de la CA à votre navigateur, pour avoir un beau cadenas vert avec votre propre cert
   - le serveur HTTP n'est disponible qu'au sein du réseau VPN
 
-![No one can use it](./img/no_one.png)
-
 ## Sommaire
 
 - [TP7 SECU : Accès réseau sécurisé](#tp7-secu--accès-réseau-sécurisé)
@@ -51,25 +49,6 @@ Concrètement, au menu :
 
 # 0. Setup
 
-➜ **Que des VMs Rocky Linux**
-
-- pour les serveurs
-
-➜ **Le client, c'est ton PC**
-
-- genre le client pour le VPN
-- pour SSH, c'est toi qui te co à distance
-- et idem pour le serveur Web : c'est toi qui visites le site
-
-➜ **La sécu c'est aussi de la conformité : maîtriser son parc.** DONC CHECKLIST :
-
-- [ ] carte réseau host-only avec IP statique
-- [ ] pas de carte NAT, sauf si demandée
-- [ ] connexion SSH fonctionnelle
-- [ ] firewall actif
-- [ ] firewall configuré (tous les services inutiles sont retirés)
-- [ ] SELinux désactivé
-- [ ] hostname défini
 
 # I. VPN
 
@@ -85,16 +64,68 @@ Dans cette section, vous allez monter un serveur VPN. Le but : avoir un réseau 
 
 🌞 **Monter un serveur VPN Wireguard sur `vpn.tp7.secu`**
 
-- ajoutez une carte NAT à `vpn.tp7.secu`
-- le réseau VPN doit être `10.7.2.0/24`
-- [j'ai écrit un TP pour les B1 pour monter un serveur Wireguard, go vous en inspirer](https://gitlab.com/it4lik/b1-reseau-2023/-/blob/master/tp/7/vpn.md)
-- vous devez pouvoir démarrer le serveur VPN avec un `systemctl start`
+```
+$ sudo modprobe wireguard
+
+$ lsmod | grep wireguard
+
+$ sudo echo wireguard > /etc/modules-load.d/wireguard.conf
+
+$ sudo dnf install wireguard-tools
+```
+```
+$ wg genkey | sudo tee /etc/wireguard/server.key
+
+$ sudo chmod 0400 /etc/wireguard/server.key
+
+$ sudo cat /etc/wireguard/server.key | wg pubkey | sudo tee /etc/wireguard/server.pub
+```
+```
+$ sudo cat /etc/wireguard/wg0.conf
+
+[Interface]
+PrivateKey = GHsfZF+6MwpxFED0Va7JLKpD4Qf4VBvoS2Av5eo0dnU= 
+
+Address = 10.7.2.0/24
+
+ListenPort = 51820
+
+SaveConfig = true
+
+PostUp = firewall-cmd --zone=public --add-masquerade
+PostUp = firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i wg -o eth0 -j ACCEPT
+PostUp = firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -o eth0 -j MASQUERADE
+
+PostDown = firewall-cmd --zone=public --remove-masquerade
+PostDown = firewall-cmd --direct --remove-rule ipv4 filter FORWARD 0 -i wg -o eth0 -j ACCEPT
+PostDown = firewall-cmd --direct --remove-rule ipv4 nat POSTROUTING 0 -o eth0 -j MASQUERADE
+
+[Peer]
+PublicKey = lkJZNYwGK226dGnjx2DYlb6lTlW/ifJ8UqPs8Gi2ji4=
+
+AllowedIPs = 10.7.2.11/24
+```
+```
+$ sudo cat /etc/sysctl.conf
+
+net.ipv4.ip_forward=1
+net.ipv6.conf.all.forwarding=1
+
+
+$ sudo sysctl -p
+```
+```
+$ sudo firewall-cmd --add-port=51820/udp --permanent
+$ sudo firewall-cmd --reload
+```
+```
+$ sudo systemctl start wg-quick@wg0.service
+$ sudo systemctl enable wg-quick@wg0.service
+```
 
 🌞 **Client Wireguard sur `martine.tp7.secu`**
 
-- configurez un client Wireguard sur `martine.tp7.secu`
-- vous pouvez ajouter TEMPORAIREMENT une carte NAT le temps de faire une install (n'oubliez pas de l'enlever après)
-- une fois connecté au VPN vous pouvez accéder à Internet en passant par le serveur
+Vous pouvez lancer le script [vpn](VPN.sh) avec comme argument l'ip du client souhaité.
 
 🌞 **Client Wireguard sur votre PC**
 
@@ -326,5 +357,3 @@ server {
 
 - faites quelques recherches pour forcer votre serveur à n'utiliser que des méthodes de chiffrement fortes
 - ça implique de refuser les connexions SSL, ou TLS 1.0, on essaie de forcer TLS 1.3
-
-![Do you even](img/do_you_even.jpg)
